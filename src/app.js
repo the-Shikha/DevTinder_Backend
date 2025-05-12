@@ -1,34 +1,26 @@
 const express=require("express");
 const app=express();
+const {authAdmin,authUser}=require("./middlewares/Auth")
 
-app.get("/user",
-    [(req,res,next)=>{
-        console.log("1st route handler")
-        //res.send("1st response")
-        next();
-    },
-    (req,res,next)=>{
-        console.log("2nd route handler")
-        //res.send("2nd response")
-        next();
-    },
-    (req,res,next)=>{
-        console.log("3rd route handler")
-        //res.send("3rd response")
-        next();
-    },
-    (req,res,next)=>{
-        console.log("4th route handler")
-        //res.send("4th response")
-        next();
-    },
-    (req,res,next)=>{
-        console.log("5th route handler")
-        res.send("5th response")
-        next();
-    }]
+app.use("/admin",authAdmin)
 
-)
+app.get("/admin/getData",(req,res)=>{
+    res.send("All data fetched successfully")
+    
+})
+
+app.get("/admin/deleteData",(req,res)=>{
+    res.send("Data deleted successfully")
+    
+})
+
+app.post("/user/login",(req,res)=>{
+    res.send("User logged in successfully")
+})
+
+app.get("/user/data",authUser,(req,res)=>{
+    res.send("User data fetched")
+})
 
 app.listen(5000,()=>{
     console.log("Server is listening on port no 5000")
