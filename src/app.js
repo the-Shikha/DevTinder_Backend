@@ -1,25 +1,23 @@
 const express=require("express");
 const app=express();
-const {authAdmin,authUser}=require("./middlewares/Auth")
 
-app.use("/admin",authAdmin)
-
-app.get("/admin/getData",(req,res)=>{
-    res.send("All data fetched successfully")
-    
+app.get("/user/data",(req,res)=>{
+    try{
+        throw new Error("Something error occured")
+        res.send("User data fetched") 
+    }
+    catch(err){
+        res.status(500).send("Oops! something went wrong 1!")
+    }
 })
 
-app.get("/admin/deleteData",(req,res)=>{
-    res.send("Data deleted successfully")
-    
-})
-
-app.post("/user/login",(req,res)=>{
-    res.send("User logged in successfully")
-})
-
-app.get("/user/data",authUser,(req,res)=>{
+app.get("/user/data",(req,res)=>{
+    throw new Error("Something error occured")
     res.send("User data fetched")
+})
+
+app.use("/",(err,req,res,next)=>{
+    res.status(500).send("Oops! something went wrong!")
 })
 
 app.listen(5000,()=>{
