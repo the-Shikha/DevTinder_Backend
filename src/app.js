@@ -19,7 +19,7 @@ app.post("/signup",async (req,res)=>{
         res.send("User data is sending successfully!")
     }
     catch(err){
-        res.status(400).send("Issue while sending data")
+        res.status(400).send(err.message)
     }
     
 })
@@ -73,19 +73,30 @@ app.delete("/user",async (req,res)=>{
     
 })
 
-app.patch("/user",async (req,res)=>{
-    const userId=req.body._id
-    // const newData={
-    //     firstName:"Shivani"
-    // }
+app.patch("/user/:userId",async (req,res)=>{
+    const userId=req.params?.userId
     const newData=req.body
+    
     try{
-        const user=await User.findByIdAndUpdate({_id:userId},newData)
+        const ALLOWED_FIELD=[
+            "age","gender","photoUrl","about","skills"
+        ]
+        const isAllowed=Object.keys(newData).every((k)=>
+            ALLOWED_FIELD.includes(k)
+        )
+        if(!isAllowed){
+            throw new Error("Please update invalid field")
+        }
+        if(newData.skills.length>10){
+            throw new Error("Skills can't exceeds lenth upto 10")
+        }
+        const user=await User.findByIdAndUpdate({_id:userId},newData,{runValidators:true})
+        
         res.send("User updated successfully")
     
     }
     catch(err){
-        console.log("Something went wrong while updating user")
+        res.status(400).send(err.message)
     }
     
 })
