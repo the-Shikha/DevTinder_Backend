@@ -2,6 +2,9 @@ const express=require("express");
 const app=express();
 const connectDB=require("./config/database")
 const User=require("./models/user")
+const {validateSignUpData}=require("./utils/validation")
+const bcrypt=require("bcrypt")
+const validator=require("validator")
 
 app.use(express.json());
 
@@ -13,8 +16,22 @@ app.post("/signup",async (req,res)=>{
     //     emailId:"kanika@gmail.com",
     //     password:"12345"
     // }
-    const user=new User(req.body);
     try{
+        //validate data
+        validateSignUpData(req);
+        
+
+        //encrypt pwd
+        const {firstName,lastName,emailId,password}=req.body
+        const hashPassword=await bcrypt.hash(password,10);
+
+        //save it to the db
+        const user=new User({
+            firstName,
+            lastName,
+            emailId,
+            password:hashPassword
+        });
         await user.save();
         res.send("User data is sending successfully!")
     }
@@ -24,6 +41,25 @@ app.post("/signup",async (req,res)=>{
     
 })
 
+app.post("/login",async (req,res)=>{
+    try{
+        const {emailId,password}=req.body;
+        if(!validator.isEmail(emailId)){
+            throw new Error("Enter a valid email")
+        }
+        const user=await User.findOne({emailId:emailId})
+        const isValid=await bcrypt.compare(password,user.password);
+        if(!isValid){
+            res.status(401).send("Password is incorrect, try again")
+        }
+
+        res.send("User logged in successfully")
+
+    }
+    catch(err){
+        res.status(400).send(err.message)
+    }
+})
 
 app.get("/user",async (req,res)=>{
     //const userEmail=req.body.emailId;
@@ -44,6 +80,8 @@ app.get("/user",async (req,res)=>{
     }
     
 })
+
+
 app.get("/feed",async (req,res)=>{
     try{
         const user=await User.find({})
