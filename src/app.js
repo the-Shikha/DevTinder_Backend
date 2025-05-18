@@ -52,13 +52,13 @@ app.post("/login",async (req,res)=>{
             throw new Error("Enter a valid email")
         }
         const user=await User.findOne({emailId:emailId})
-        const isValid=await bcrypt.compare(password,user.password);
+        const isValid=await user.validatePwd(password)
         if(!isValid){
             res.status(401).send("Password is incorrect, try again")
         }
 
         //create json web token
-        const token=jwt.sign({_id:user._id},"DevTinder@01",{expiresIn:"1d"})
+        const token=await user.getJWT()
 
         //send it inside cookie
         res.cookie("token",token,{expires: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000)})
