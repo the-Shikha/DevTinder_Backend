@@ -1,26 +1,25 @@
-const authAdmin=(req,res,next)=>{
-    //logic for admin authentication
-    console.log("Checking admin is authorized")
-    const token="abc"
-    const isValidated=token==="abc";
-    if(!isValidated){
-        res.status(401).send("Admin token is invalid")
-    }
-    else{
-        next();
-    }
-}
+const User = require("../models/user");
+const jwt=require("jsonwebtoken")
 
-const authUser=(req,res,next)=>{
-    //logic for admin authentication
-    console.log("Checking user is authorized")
-    const token="abc"
-    const isValidated=token==="abc";
-    if(!isValidated){
-        res.status(401).send("User token is invalid")
-    }
-    else{
+const userAuth=async(req,res,next)=>{
+    try{
+        const cookies=req.cookies;
+        const {token}=cookies;
+        if(!token){
+            throw new Error("Token is invalid, Login first");
+        }
+        const isTokenValidObj=jwt.verify(token,"DevTinder@01")
+        const id=isTokenValidObj._id
+        const user=await User.findById(id);
+        if(!user){
+            throw new Error("User is not present in DB");
+        }
+        req.user=user
         next();
     }
+    catch(err){
+        res.status(400).send(err.message)
+    }
+
 }
-module.exports={authAdmin,authUser}
+module.exports={userAuth}

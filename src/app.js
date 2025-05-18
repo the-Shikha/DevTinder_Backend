@@ -5,8 +5,12 @@ const User=require("./models/user")
 const {validateSignUpData}=require("./utils/validation")
 const bcrypt=require("bcrypt")
 const validator=require("validator")
+const cookieParser=require("cookie-parser")
+const jwt=require("jsonwebtoken")
+const {userAuth}=require("./middlewares/Auth")
 
 app.use(express.json());
+app.use(cookieParser())
 
 app.post("/signup",async (req,res)=>{
     //console.log(req.body)
@@ -53,8 +57,34 @@ app.post("/login",async (req,res)=>{
             res.status(401).send("Password is incorrect, try again")
         }
 
+        //create json web token
+        const token=jwt.sign({_id:user._id},"DevTinder@01",{expiresIn:"1d"})
+
+        //send it inside cookie
+        res.cookie("token",token,{expires: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000)})
+        
         res.send("User logged in successfully")
 
+    }
+    catch(err){
+        res.status(400).send(err.message)
+    }
+})
+
+app.get("/profile",userAuth,async(req,res)=>{
+    try{
+        const user=req.user;
+        res.send(user)
+    }
+    catch(err){
+        res.status(400).send(err.message)
+    }
+})
+
+app.post("/sendConnectionRequest",userAuth,(req,res)=>{
+    try{
+        const user=req.user;
+        res.send(user.firstName+ " is sending a friend request");
     }
     catch(err){
         res.status(400).send(err.message)
