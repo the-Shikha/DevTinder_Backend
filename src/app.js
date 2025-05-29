@@ -11,10 +11,12 @@ app.use(cookieParser())
 const authRouter=require("./routes/auth")
 const profileRoute=require("./routes/profile")
 const connectionRequestRouter=require("./routes/requests")
+const userRouter=require("./routes/user")
 
 app.use("/",authRouter)
 app.use("/",profileRoute)
 app.use("/",connectionRequestRouter)
+app.use("/",userRouter)
 
 connectDB()
 .then(()=>{
