@@ -22,8 +22,17 @@ authRouter.post("/signup",async (req,res)=>{
             emailId,
             password:hashPassword
         });
-        await user.save();
-        res.send("User data is sending successfully!")
+        const savedUser=await user.save();
+        //create json web token
+        const token=await savedUser.getJWT()
+
+        //send it inside cookie
+        res.cookie("token",token,{expires: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000)})
+        
+        res.json({
+            message:"User data is sending successfully!",
+            data:savedUser
+        })
     }
     catch(err){
         res.status(400).send(err.message)
@@ -35,12 +44,12 @@ authRouter.post("/login",async (req,res)=>{
     try{
         const {emailId,password}=req.body;
         if(!validator.isEmail(emailId)){
-            throw new Error("Enter a valid email")
+            throw new Error("Enter a valid email id")
         }
         const user=await User.findOne({emailId:emailId})
         const isValid=await user.validatePwd(password)
         if(!isValid){
-            res.status(401).send("Password is incorrect, try again")
+            res.status(401).send("Invalid credentials")
         }
 
         //create json web token
@@ -49,11 +58,11 @@ authRouter.post("/login",async (req,res)=>{
         //send it inside cookie
         res.cookie("token",token,{expires: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000)})
         
-        res.send("User logged in successfully")
+        res.send(user)
 
     }
     catch(err){
-        res.status(400).send(err.message)
+        res.status(401).send("Invalid credentials")
     }
 })
 

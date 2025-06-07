@@ -18,7 +18,7 @@ profileRouter.get("/profile/view",userAuth,async(req,res)=>{
 profileRouter.patch("/profile/edit",userAuth,async(req,res)=>{
     try{
         if(!validateEditProfileData(req)){
-            res.status(401).send("Email and pwd can't be editable")
+            return res.status(401).send("Email and pwd can't be editable")
         }
         const user=req.user;
         // const {firstName,lastName,age,gender,photoUrl,about,skills}=req.body;
@@ -33,9 +33,12 @@ profileRouter.patch("/profile/edit",userAuth,async(req,res)=>{
         // },{new:true})
         // res.send(updatedProfile)
 
-        Object.keys(req.body).forEach(key=>user[key]=req.body[key])
+        Object.keys(req.body).forEach((key)=>user[key]=req.body[key])
         await user.save()
-        res.send(user)
+        res.json({
+            message:"User data updated successfully",
+            data:user
+        })
 
     }
     catch(err){

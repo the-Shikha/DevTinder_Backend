@@ -6,7 +6,7 @@ const userAuth=async(req,res,next)=>{
         const cookies=req.cookies;
         const {token}=cookies;
         if(!token){
-            throw new Error("Token is invalid, Login first");
+            return res.status(401).send("Please login!")
         }
         const isTokenValidObj=jwt.verify(token,"DevTinder@01")
         const id=isTokenValidObj._id
